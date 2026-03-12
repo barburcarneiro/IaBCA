@@ -12,7 +12,7 @@ const tabLabels: Record<Tab, string> = {
   chat: "Chat Jurídico",
   clausulas: "Buscar Cláusulas",
   comparador: "Comparador de Contratos",
-  upload: "Adicionar Documentos",
+  upload: "Adicionar Documentos"
 };
 
 const Index = () => {
@@ -26,19 +26,19 @@ const Index = () => {
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           {/* Tab bar */}
           <div className="flex bg-card border-b border-border flex-shrink-0 overflow-x-auto">
-            {(Object.keys(tabLabels) as Tab[]).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-3 font-display text-xs font-medium tracking-wide whitespace-nowrap border-b-2 transition-all ${
-                  activeTab === tab
-                    ? "text-gold border-gold"
-                    : "text-muted-foreground border-transparent hover:text-foreground"
-                }`}
-              >
-                {tabLabels[tab]}
-              </button>
-            ))}
+            {(Object.keys(tabLabels) as Tab[]).map((tab) => {}
+
+
+
+
+
+
+
+
+
+
+
+            )}
           </div>
 
           {/* Panels */}
@@ -48,8 +48,8 @@ const Index = () => {
           {activeTab === "upload" && <UploadPanel />}
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Index;
