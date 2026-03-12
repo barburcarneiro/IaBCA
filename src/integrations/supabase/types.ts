@@ -14,13 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      document_chunks: {
+        Row: {
+          conteudo: string
+          created_at: string
+          document_id: string
+          embedding: string | null
+          id: string
+          nome_arquivo: string
+        }
+        Insert: {
+          conteudo: string
+          created_at?: string
+          document_id: string
+          embedding?: string | null
+          id?: string
+          nome_arquivo: string
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string
+          document_id?: string
+          embedding?: string | null
+          id?: string
+          nome_arquivo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_chunks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          conteudo: string
+          created_at: string
+          id: string
+          nome_arquivo: string
+        }
+        Insert: {
+          conteudo: string
+          created_at?: string
+          id?: string
+          nome_arquivo: string
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string
+          id?: string
+          nome_arquivo?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      buscar_chunks_similares: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          conteudo: string
+          document_id: string
+          id: string
+          nome_arquivo: string
+          similarity: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
