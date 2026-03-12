@@ -8,53 +8,58 @@ interface AuthGuardProps {
   onUnauthenticated: () => void;
 }
 
-const ALLOWED_DOMAIN = "barburcarneiro";
+const ALLOWED_DOMAINS = new Set(["barburcarneiro", "barburcarneiro.com"]);
+
+const isAllowedDomain = (email?: string) => {
+  const domain = (email ?? "").split("@")[1]?.toLowerCase();
+  return Boolean(domain && ALLOWED_DOMAINS.has(domain));
+};
 
 const AuthGuard = ({ children, onUnauthenticated }: AuthGuardProps) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (session) {
-          const email = session.user.email || "";
-          const domain = email.split("@")[1];
-          if (domain !== ALLOWED_DOMAIN) {
-            toast.error("Acesso restrito a contas @barburcarneiro.");
-            await supabase.auth.signOut();
-            onUnauthenticated();
-            return;
-          }
-        }
-        setSession(session);
-        setLoading(false);
-        if (!session) {
-          onUnauthenticated();
-        }
-      }
-    );
+    let mounted = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        const email = session.user.email || "";
-        const domain = email.split("@")[1];
-        if (domain !== ALLOWED_DOMAIN) {
-          toast.error("Acesso restrito a contas @barburcarneiro.");
-          supabase.auth.signOut();
-          onUnauthenticated();
-          setLoading(false);
-          return;
-        }
-      }
-      setSession(session);
-      setLoading(false);
-      if (!session) {
+    const applySession = async (nextSession: Session | null) => {
+      if (!mounted) return;
+
+      if (!nextSession) {
+        setSession(null);
+        setLoading(false);
         onUnauthenticated();
+        return;
       }
+
+      if (!isAllowedDomain(nextSession.user.email)) {
+        toast.error("Acesso restrito a contas @barburcarneiro.");
+        await supabase.auth.signOut();
+        if (!mounted) return;
+        setSession(null);
+        setLoading(false);
+        onUnauthenticated();
+        return;
+      }
+
+      setSession(nextSession);
+      setLoading(false);
+    };
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      void applySession(nextSession);
     });
 
-    return () => subscription.unsubscribe();
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      void applySession(initialSession);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [onUnauthenticated]);
 
   if (loading) {
