@@ -14,7 +14,7 @@ const queryClient = new QueryClient();
 const ProtectedIndex = () => {
   const navigate = useNavigate();
   return (
-    <AuthGuard onUnauthenticated={() => navigate("/login")}>
+    <AuthGuard onUnauthenticated={() => navigate(`/login${window.location.search}`)}>
       <Index />
     </AuthGuard>
   );
