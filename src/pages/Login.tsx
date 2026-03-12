@@ -28,8 +28,13 @@ const Login = () => {
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
+      const token = new URLSearchParams(window.location.search).get("__lovable_token");
+      const redirectUri = token
+        ? `${window.location.origin}/?__lovable_token=${encodeURIComponent(token)}`
+        : window.location.origin;
+
       const { error } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: redirectUri,
         extraParams: {
           hd: "barburcarneiro",
           prompt: "select_account",
