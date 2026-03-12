@@ -25,20 +25,20 @@ const Index = () => {
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           {/* Tab bar */}
-          <div className="flex border-b border-border flex-shrink-0 overflow-x-auto bg-secondary-foreground">
-            {(Object.keys(tabLabels) as Tab[]).map((tab) => {}
-
-
-
-
-
-
-
-
-
-
-
-            )}
+          <div className="flex border-b border-border flex-shrink-0 overflow-x-auto bg-secondary">
+            {(Object.keys(tabLabels) as Tab[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                  activeTab === tab
+                    ? "border-primary text-primary"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tabLabels[tab]}
+              </button>
+            ))}
           </div>
 
           {/* Panels */}
@@ -48,8 +48,8 @@ const Index = () => {
           {activeTab === "upload" && <UploadPanel />}
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 };
 
 export default Index;
