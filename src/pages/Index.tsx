@@ -26,19 +26,19 @@ const Index = () => {
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           {/* Tab bar */}
           <div className="flex bg-card border-b border-border flex-shrink-0 overflow-x-auto">
-            {(Object.keys(tabLabels) as Tab[]).map((tab) => {}
-
-
-
-
-
-
-
-
-
-
-
-            )}
+            {(Object.keys(tabLabels) as Tab[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-3 text-xs font-medium transition-colors whitespace-nowrap ${
+                  activeTab === tab
+                    ? "text-gold border-b-2 border-gold bg-secondary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                }`}
+              >
+                {tabLabels[tab]}
+              </button>
+            ))}
           </div>
 
           {/* Panels */}
