@@ -1,12 +1,24 @@
+import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import AuthGuard from "@/components/AuthGuard";
 import Index from "./pages/Index.tsx";
+import Login from "./pages/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
+
+const ProtectedIndex = () => {
+  const navigate = useNavigate();
+  return (
+    <AuthGuard onUnauthenticated={() => navigate("/login")}>
+      <Index />
+    </AuthGuard>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -15,8 +27,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<ProtectedIndex />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
