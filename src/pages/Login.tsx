@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { lovable } from "@/integrations/lovable/index";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -7,7 +9,7 @@ import { toast } from "sonner";
 function isInIframe(): boolean {
   try {
     return window.self !== window.top;
-  } catch (e) {
+  } catch {
     return true;
   }
 }
@@ -24,22 +26,57 @@ const GoogleIcon = () => (
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const inIframe = isInIframe();
+  const navigate = useNavigate();
+
+  const standaloneUrl = useMemo(() => {
+    if (!inIframe) return window.location.href;
+
+    const { hostname, pathname, search } = window.location;
+    if (!hostname.endsWith(".lovableproject.com")) {
+      return window.location.href;
+    }
+
+    const projectSlug = hostname.replace(".lovableproject.com", "");
+    return `https://id-preview--${projectSlug}.lovable.app${pathname}${search}`;
+  }, [inIframe]);
+
+  useEffect(() => {
+    const hashParams = new URLSearchParams(window.location.hash.replace("#", ""));
+    const oauthError = hashParams.get("error_description") || hashParams.get("error");
+
+    if (oauthError) {
+      toast.error("Falha no login com Google. Tente novamente.");
+      window.history.replaceState({}, "", `${window.location.pathname}${window.location.search}`);
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/", { replace: true });
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        navigate("/", { replace: true });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      const token = new URLSearchParams(window.location.search).get("__lovable_token");
-      const redirectUri = token
-        ? `${window.location.origin}/?__lovable_token=${encodeURIComponent(token)}`
-        : window.location.origin;
-
       const { error } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: redirectUri,
+        redirect_uri: window.location.origin,
         extraParams: {
-          hd: "barburcarneiro",
+          hd: "barburcarneiro.com",
           prompt: "select_account",
         },
       });
+
       if (error) {
         toast.error("Erro ao fazer login. Verifique se está usando uma conta @barburcarneiro.");
         console.error("OAuth error:", error);
@@ -56,21 +93,15 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-2xl font-bold text-foreground">
-            BCA – Assistente Jurídico
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold text-foreground">BCA – Assistente Jurídico</CardTitle>
           <CardDescription className="text-muted-foreground">
             Acesso restrito a contas <strong>@barburcarneiro</strong>
           </CardDescription>
         </CardHeader>
+
         <CardContent className="flex flex-col items-center gap-4">
           {inIframe ? (
-            <a
-              href={window.location.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full"
-            >
+            <a href={standaloneUrl} target="_blank" rel="noopener noreferrer" className="w-full">
               <Button className="w-full flex items-center justify-center gap-2" size="lg">
                 <GoogleIcon />
                 Abrir em nova aba para fazer login
@@ -87,9 +118,10 @@ const Login = () => {
               {loading ? "Entrando..." : "Entrar com Google"}
             </Button>
           )}
+
           <p className="text-xs text-muted-foreground text-center">
             {inIframe
-              ? "O login com Google não funciona dentro do preview. Clique acima para abrir em nova aba."
+              ? "No preview, abra em nova aba para autenticar corretamente."
               : "Apenas contas do domínio @barburcarneiro são autorizadas."}
           </p>
         </CardContent>
