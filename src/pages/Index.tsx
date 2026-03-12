@@ -38,11 +38,7 @@ const Index = () => {
               >
                 {tabLabels[tab]}
               </button>
-
-
-
-
-
+            ))}
 
 
             )}
